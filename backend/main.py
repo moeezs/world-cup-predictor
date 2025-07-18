@@ -10,7 +10,6 @@ from datetime import datetime
 import os
 import uvicorn
 
-# Global variables for models
 best_model = None
 scalers = None
 elo_ratings = None
@@ -73,6 +72,10 @@ class TournamentRequest(BaseModel):
 class PredictionResponse(BaseModel):
     home_team: str
     away_team: str
+    winner: str
+    scoreline: str
+    home_score: int
+    away_score: int
     prediction: str
     home_win_prob: float
     draw_prob: float
@@ -105,6 +108,57 @@ def get_team_current_features(team, opponent, neutral=True):
         'away_tournament_exp': 10,
         'tournament_exp_diff': 0,
         'neutral': 1 if neutral else 0
+    }
+
+def generate_score_prediction(home_team, away_team, home_win_prob, draw_prob, away_win_prob):
+    """Generate realistic score prediction based on team strengths and probabilities"""
+    import random
+    import numpy as np
+    
+    home_elo = elo_ratings.get(home_team, 1500)
+    away_elo = elo_ratings.get(away_team, 1500)
+    
+    elo_diff = home_elo - away_elo
+    strength_factor = 1 + (elo_diff / 400)
+    
+    base_goals = 2.5
+    
+    if home_win_prob > away_win_prob:
+        home_expected = base_goals * 0.6 * strength_factor
+        away_expected = base_goals * 0.4 / strength_factor
+    elif away_win_prob > home_win_prob:
+        home_expected = base_goals * 0.4 / strength_factor
+        away_expected = base_goals * 0.6 * strength_factor
+    else:
+        home_expected = base_goals * 0.5
+        away_expected = base_goals * 0.5
+    
+    home_score = np.random.poisson(max(0.3, min(4.0, home_expected)))
+    away_score = np.random.poisson(max(0.3, min(4.0, away_expected)))
+    
+    if home_score > away_score:
+        winner = home_team
+    elif away_score > home_score:
+        winner = away_team
+    else:
+        winner = "Draw"
+    
+    max_prob = max(home_win_prob, draw_prob, away_win_prob)
+    if max_prob == home_win_prob and home_score <= away_score:
+        home_score = away_score + 1
+        winner = home_team
+    elif max_prob == away_win_prob and away_score <= home_score:
+        away_score = home_score + 1
+        winner = away_team
+    elif max_prob == draw_prob and home_score != away_score:
+        away_score = home_score
+        winner = "Draw"
+    
+    return {
+        "home_score": int(home_score),
+        "away_score": int(away_score),
+        "winner": winner,
+        "scoreline": f"{home_score}-{away_score}"
     }
 
 def predict_match(home_team: str, away_team: str, neutral: bool = True):
@@ -164,7 +218,19 @@ def predict_match(home_team: str, away_team: str, neutral: bool = True):
         prob_draw = float(prob_dict.get('draw', 0))
         prob_home = float(prob_dict.get('home_win', 0))
     
+    # Generate score prediction
+    score_prediction = generate_score_prediction(
+        home_team, away_team,
+        prob_home,
+        prob_draw, 
+        prob_away
+    )
+    
     return {
+        'winner': score_prediction["winner"],
+        'scoreline': score_prediction["scoreline"],
+        'home_score': score_prediction["home_score"],
+        'away_score': score_prediction["away_score"],
         'prediction': prediction,
         'home_win_prob': prob_home,
         'draw_prob': prob_draw,
@@ -193,6 +259,10 @@ async def predict_match_endpoint(match: MatchPrediction):
         return PredictionResponse(
             home_team=match.home_team,
             away_team=match.away_team,
+            winner=result['winner'],
+            scoreline=result['scoreline'],
+            home_score=result['home_score'],
+            away_score=result['away_score'],
             prediction=result['prediction'],
             home_win_prob=result['home_win_prob'],
             draw_prob=result['draw_prob'],
@@ -214,6 +284,7 @@ async def simulate_tournament(request: TournamentRequest):
     
     try:
 
+        # Create groups
         teams = request.qualified_teams.copy()
         np.random.shuffle(teams)
         
@@ -227,10 +298,76 @@ async def simulate_tournament(request: TournamentRequest):
         group_results = {}
         
         for group_name, group_teams in groups.items():
-            qualified_teams.extend(group_teams[:2])
+            standings = {}
+            for team in group_teams:
+                standings[team] = {
+                    'team': team,
+                    'played': 0,
+                    'wins': 0,
+                    'draws': 0,
+                    'losses': 0,
+                    'goals_for': 0,
+                    'goals_against': 0,
+                    'goal_difference': 0,
+                    'points': 0
+                }
+            
+            matches = []
+            for i in range(len(group_teams)):
+                for j in range(i + 1, len(group_teams)):
+                    home_team = group_teams[i]
+                    away_team = group_teams[j]
+                    
+                    prediction = predict_match(home_team, away_team, True)
+                    
+                    home_stats = standings[home_team]
+                    away_stats = standings[away_team]
+                    
+                    home_stats['played'] += 1
+                    away_stats['played'] += 1
+                    home_stats['goals_for'] += prediction['home_score']
+                    home_stats['goals_against'] += prediction['away_score']
+                    away_stats['goals_for'] += prediction['away_score']
+                    away_stats['goals_against'] += prediction['home_score']
+                    
+                    if prediction['winner'] == home_team:
+                        home_stats['wins'] += 1
+                        home_stats['points'] += 3
+                        away_stats['losses'] += 1
+                    elif prediction['winner'] == away_team:
+                        away_stats['wins'] += 1
+                        away_stats['points'] += 3
+                        home_stats['losses'] += 1
+                    else:
+                        home_stats['draws'] += 1
+                        away_stats['draws'] += 1
+                        home_stats['points'] += 1
+                        away_stats['points'] += 1
+                    
+                    home_stats['goal_difference'] = home_stats['goals_for'] - home_stats['goals_against']
+                    away_stats['goal_difference'] = away_stats['goals_for'] - away_stats['goals_against']
+                    
+                    matches.append({
+                        'home_team': home_team,
+                        'away_team': away_team,
+                        'home_score': prediction['home_score'],
+                        'away_score': prediction['away_score'],
+                        'winner': prediction['winner'],
+                        'scoreline': prediction['scoreline']
+                    })
+            
+            sorted_teams = sorted(standings.values(), 
+                                key=lambda x: (x['points'], x['goal_difference'], x['goals_for']), 
+                                reverse=True)
+            
+            qualified_from_group = [team['team'] for team in sorted_teams[:2]]
+            qualified_teams.extend(qualified_from_group)
+            
             group_results[group_name] = {
                 'teams': group_teams,
-                'qualified': group_teams[:2]
+                'standings': sorted_teams,
+                'matches': matches,
+                'qualified': qualified_from_group
             }
         
         current_round_teams = qualified_teams
@@ -249,17 +386,19 @@ async def simulate_tournament(request: TournamentRequest):
                     
                     prediction = predict_match(team1, team2, True)
                     
-                    # Determine winner based on prediction
-                    if prediction['home_win_prob'] > prediction['away_win_prob']:
-                        winner = team1
+                    if prediction['winner'] == 'Draw':
+                        winner = team1 if prediction['home_win_prob'] > prediction['away_win_prob'] else team2
                     else:
-                        winner = team2
+                        winner = prediction['winner']
                     
                     winners.append(winner)
                     matches.append({
                         'home_team': team1,
                         'away_team': team2,
                         'winner': winner,
+                        'scoreline': prediction['scoreline'],
+                        'home_score': prediction['home_score'],
+                        'away_score': prediction['away_score'],
                         'prediction': prediction
                     })
             
@@ -291,7 +430,6 @@ async def get_team_stats(team_name: str):
     try:
         elo_rating = elo_ratings.get(team_name, 1500)
         
-        # Get recent matches from features_df
         team_matches = features_df[
             (features_df['home_team'] == team_name) | 
             (features_df['away_team'] == team_name)

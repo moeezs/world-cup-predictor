@@ -59,23 +59,66 @@ const TournamentSimulator = ({ availableTeams, apiUrl }) => {
     return (
       <div className="mb-8">
         <h3 className="text-xl font-bold text-gray-900 mb-4">Group Stage</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {Object.entries(tournamentResult.group_stage).map(([groupName, groupData]) => (
-            <div key={groupName} className="bg-gray-50 rounded-lg p-4">
-              <h4 className="font-semibold text-lg mb-2">Group {groupName}</h4>
-              <div className="space-y-2">
-                {groupData.teams.map((team, index) => (
-                  <div
-                    key={team}
-                    className={`p-2 rounded text-sm ${
-                      index < 2 
-                        ? 'bg-green-100 text-green-800 font-medium' 
-                        : 'bg-gray-100 text-gray-600'
-                    }`}
-                  >
-                    {team} {index < 2 && '✓'}
-                  </div>
-                ))}
+            <div key={groupName} className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="bg-blue-50 px-4 py-2 rounded-t-lg">
+                <h4 className="font-bold text-lg text-blue-900">Group {groupName}</h4>
+              </div>
+              
+              {/* Standings Table */}
+              <div className="p-4">
+                <h5 className="font-semibold text-sm text-gray-700 mb-2">Standings</h5>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="text-left p-2">Team</th>
+                        <th className="text-center p-2">P</th>
+                        <th className="text-center p-2">W</th>
+                        <th className="text-center p-2">D</th>
+                        <th className="text-center p-2">L</th>
+                        <th className="text-center p-2">GF</th>
+                        <th className="text-center p-2">GA</th>
+                        <th className="text-center p-2">GD</th>
+                        <th className="text-center p-2 font-bold">Pts</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {groupData.standings?.map((team, index) => (
+                        <tr key={team.team} className={`${
+                          index < 2 ? 'bg-green-50 border-l-4 border-green-500' : 'bg-gray-50'
+                        }`}>
+                          <td className="p-2 font-medium">
+                            {team.team} {index < 2 && <span className="text-green-600">✓</span>}
+                          </td>
+                          <td className="text-center p-2">{team.played}</td>
+                          <td className="text-center p-2">{team.wins}</td>
+                          <td className="text-center p-2">{team.draws}</td>
+                          <td className="text-center p-2">{team.losses}</td>
+                          <td className="text-center p-2">{team.goals_for}</td>
+                          <td className="text-center p-2">{team.goals_against}</td>
+                          <td className="text-center p-2">{team.goal_difference > 0 ? '+' : ''}{team.goal_difference}</td>
+                          <td className="text-center p-2 font-bold">{team.points}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Group Matches */}
+              <div className="px-4 pb-4">
+                <h5 className="font-semibold text-sm text-gray-700 mb-2">Matches</h5>
+                <div className="space-y-1">
+                  {groupData.matches?.map((match, index) => (
+                    <div key={index} className="flex justify-between items-center py-1 px-2 bg-gray-50 rounded text-xs">
+                      <span className="flex-1 text-left">{match.home_team}</span>
+                      <span className="font-bold text-blue-600 mx-2">{match.scoreline}</span>
+                      <span className="flex-1 text-right">{match.away_team}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ))}
