@@ -13,7 +13,6 @@ const TournamentSimulator = ({ availableTeams, apiUrl }) => {
     label: team
   }));
 
-  // Pre-selected common World Cup teams for convenience
   const commonTeams = [
     'Brazil', 'Argentina', 'France', 'Germany', 'Spain', 'England', 
     'Portugal', 'Netherlands', 'Italy', 'Belgium', 'Croatia', 'Mexico',
@@ -97,16 +96,19 @@ const TournamentSimulator = ({ availableTeams, apiUrl }) => {
               <h4 className="font-semibold text-lg mb-3">{roundName}</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {matches.map((match, index) => (
-                  <div key={index} className="bg-gray-50 rounded-lg p-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">{match.home_team}</span>
-                      <span className="text-xs text-gray-500">vs</span>
-                      <span className="text-sm">{match.away_team}</span>
+                  <div key={index} className="bg-gray-50 rounded-lg p-4">
+                    <div className="text-center mb-2">
+                      <div className="font-medium text-lg">
+                        {match.home_team} vs {match.away_team}
+                      </div>
                     </div>
-                    <div className="text-center mt-2">
-                      <span className="font-semibold text-green-600">
-                        {match.winner} wins
-                      </span>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-blue-600 mb-1">
+                        {match.scoreline || `${match.home_score || 0}-${match.away_score || 0}`}
+                      </div>
+                      <div className="text-sm font-semibold text-green-600">
+                        🏆 {match.winner}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -121,9 +123,9 @@ const TournamentSimulator = ({ availableTeams, apiUrl }) => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">Tournament Simulator</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-2">⚽ World Cup Simulator</h2>
         <p className="text-gray-600">
-          Select 32 teams to simulate a complete World Cup tournament
+          Select 32 teams to simulate a complete FIFA World Cup tournament
         </p>
       </div>
 

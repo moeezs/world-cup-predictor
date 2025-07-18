@@ -176,13 +176,14 @@ const MatchPredictor = ({ availableTeams, apiUrl }) => {
               </div>
             </div>
 
-            {/* Prediction */}
+            {/* Winner and Score Prediction */}
             <div className="mb-6">
-              <div className="text-4xl mb-2">
-                {getResultIcon(prediction.prediction)}
+              <div className="text-4xl mb-2">⚽</div>
+              <div className="text-3xl font-bold text-green-600 mb-2">
+                {prediction.scoreline}
               </div>
               <div className="text-xl font-semibold text-gray-800">
-                Most Likely: {prediction.prediction.replace('_', ' ').toUpperCase()}
+                {prediction.winner === 'Draw' ? 'Match ends in a Draw' : `${prediction.winner} wins!`}
               </div>
             </div>
 
