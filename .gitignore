@@ -1,8 +1,6 @@
 /node_modules
 *.csv
-*.md
 .env
 /frontend/node_modules
 .venv
 *.env
-DEPLOYMENT_READY.md
