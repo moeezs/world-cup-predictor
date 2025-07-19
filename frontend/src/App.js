@@ -24,7 +24,7 @@ function App() {
       setAvailableTeams(response.data.teams);
       setError(null);
     } catch (err) {
-      setError('Failed to load teams. Please check if the API server is running.');
+      setError('Failed to load teams. Please wait while the server is starting. Check back in 2 minutes. Thank you!');
       console.error('Error fetching teams:', err);
     } finally {
       setLoading(false);
