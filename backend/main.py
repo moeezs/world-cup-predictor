@@ -40,7 +40,13 @@ async def lifespan(app: FastAPI):
                 scalers = joblib.load(f'{model_path}scalers.pkl')
                 elo_ratings = joblib.load(f'{model_path}elo_ratings.pkl')
                 available_teams = joblib.load(f'{model_path}available_teams.pkl')
-                features_df = pd.read_pickle(f'{model_path}features_df.pkl')
+                
+                try:
+                    features_df = pd.read_pickle(f'{model_path}features_df.pkl')
+                except Exception as e:
+                    print(f"Warning: Could not load features_df.pkl: {e}")
+                    features_df = pd.DataFrame()
+                
                 print(f"✅ Models loaded successfully from {model_path}!")
                 model_files_loaded = True
                 break
