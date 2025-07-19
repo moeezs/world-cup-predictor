@@ -280,6 +280,8 @@ const GroupDialog = ({ isOpen, onClose, groupName, groupData }) => {
 };
 
 const TournamentSimulator = ({ availableTeams, apiUrl }) => {
+  const resolvedApiUrl = process.env.REACT_APP_API_URL || apiUrl || 'http://localhost:8000';
+  
   const [selectedTeams, setSelectedTeams] = useState([]);
   const [tournamentResult, setTournamentResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -319,7 +321,7 @@ const TournamentSimulator = ({ availableTeams, apiUrl }) => {
     setError(null);
 
     try {
-      const response = await axios.post(`${apiUrl}/simulate-tournament`, {
+      const response = await axios.post(`${resolvedApiUrl}/simulate-tournament`, {
         qualified_teams: selectedTeams.map(team => team.value)
       });
 

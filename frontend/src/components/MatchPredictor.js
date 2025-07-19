@@ -3,6 +3,8 @@ import axios from 'axios';
 import Select from 'react-select';
 
 const MatchPredictor = ({ availableTeams, apiUrl }) => {
+  const resolvedApiUrl = process.env.REACT_APP_API_URL || apiUrl || 'http://localhost:8000';
+  
   const [homeTeam, setHomeTeam] = useState(null);
   const [awayTeam, setAwayTeam] = useState(null);
   const [neutral, setNeutral] = useState(true);
@@ -30,7 +32,7 @@ const MatchPredictor = ({ availableTeams, apiUrl }) => {
     setError(null);
 
     try {
-      const response = await axios.post(`${apiUrl}/predict`, {
+      const response = await axios.post(`${resolvedApiUrl}/predict`, {
         home_team: homeTeam.value,
         away_team: awayTeam.value,
         neutral: neutral
