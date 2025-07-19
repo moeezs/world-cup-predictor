@@ -69,12 +69,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-best_model = None
-scalers = None
-elo_ratings = None
-available_teams = None
-features_df = None
-
 class TeamSelection(BaseModel):
     teams: List[str]
 
