@@ -24,12 +24,18 @@ async def lifespan(app: FastAPI):
     try:
         model_paths = [
             './models/',
+            './backend/models/',
+            '/opt/render/project/src/backend/models/',
             '/opt/render/project/src/models/',
         ]
         
         model_files_loaded = False
         for model_path in model_paths:
             try:
+                if not os.path.exists(model_path):
+                    print(f"Path does not exist: {model_path}")
+                    continue
+                
                 best_model = joblib.load(f'{model_path}best_model.pkl')
                 scalers = joblib.load(f'{model_path}scalers.pkl')
                 elo_ratings = joblib.load(f'{model_path}elo_ratings.pkl')
@@ -43,6 +49,12 @@ async def lifespan(app: FastAPI):
                 continue
         
         if not model_files_loaded:
+            available_paths = [p for p in model_paths if os.path.exists(p)]
+            print(f"Available paths: {available_paths}")
+            if available_paths:
+                for path in available_paths:
+                    files = os.listdir(path)
+                    print(f"Files in {path}: {files}")
             raise Exception("Could not load model files from any path")
             
     except Exception as e:
