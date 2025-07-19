@@ -22,13 +22,29 @@ async def lifespan(app: FastAPI):
     global best_model, scalers, elo_ratings, available_teams, features_df
     
     try:
-        best_model = joblib.load('../models/best_model.pkl')
-        scalers = joblib.load('../models/scalers.pkl')
-        elo_ratings = joblib.load('../models/elo_ratings.pkl')
-        available_teams = joblib.load('../models/available_teams.pkl')
-        features_df = pd.read_pickle('../models/features_df.pkl')
+        model_paths = [
+            './models/',
+            '/opt/render/project/src/models/',
+        ]
         
-        print("✅ Models loaded successfully!")
+        model_files_loaded = False
+        for model_path in model_paths:
+            try:
+                best_model = joblib.load(f'{model_path}best_model.pkl')
+                scalers = joblib.load(f'{model_path}scalers.pkl')
+                elo_ratings = joblib.load(f'{model_path}elo_ratings.pkl')
+                available_teams = joblib.load(f'{model_path}available_teams.pkl')
+                features_df = pd.read_pickle(f'{model_path}features_df.pkl')
+                print(f"✅ Models loaded successfully from {model_path}!")
+                model_files_loaded = True
+                break
+            except Exception as e:
+                print(f"Failed to load from {model_path}: {e}")
+                continue
+        
+        if not model_files_loaded:
+            raise Exception("Could not load model files from any path")
+            
     except Exception as e:
         print(f"❌ Error loading models: {e}")
         raise
@@ -44,27 +60,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Get allowed origins from environment or default to local development
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
-ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    FRONTEND_URL,
-    "https://*.vercel.app",
-    "https://vercel.app"
-]
-
-# If in production, add specific Vercel domain
-if os.getenv("ENVIRONMENT") == "production":
-    ALLOWED_ORIGINS.extend([
-        "https://your-app-name.vercel.app",  # Replace with your actual Vercel URL
-        "https://your-app-name-git-main.vercel.app",
-        "https://your-app-name-username.vercel.app"
-    ])
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"] if os.getenv("ENVIRONMENT") != "production" else ALLOWED_ORIGINS,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
