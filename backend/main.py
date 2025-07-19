@@ -44,9 +44,27 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+# Get allowed origins from environment or default to local development
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    FRONTEND_URL,
+    "https://*.vercel.app",
+    "https://vercel.app"
+]
+
+# If in production, add specific Vercel domain
+if os.getenv("ENVIRONMENT") == "production":
+    ALLOWED_ORIGINS.extend([
+        "https://your-app-name.vercel.app",  # Replace with your actual Vercel URL
+        "https://your-app-name-git-main.vercel.app",
+        "https://your-app-name-username.vercel.app"
+    ])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"] if os.getenv("ENVIRONMENT") != "production" else ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -445,4 +463,6 @@ async def get_team_stats(team_name: str):
         raise HTTPException(status_code=500, detail=f"Failed to get team stats: {str(e)}")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # For local development
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
