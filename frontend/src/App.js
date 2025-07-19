@@ -33,7 +33,7 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+      <div className="min-h-screen bg-soccer-field flex items-center justify-center">
         <LoadingSpinner />
       </div>
     );
@@ -41,14 +41,14 @@ function App() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-        <div className="card max-w-md mx-auto text-center">
+      <div className="min-h-screen bg-soccer-field flex items-center justify-center">
+        <div className="scrapbook-card max-w-md mx-auto text-center">
           <div className="text-red-500 text-xl mb-4">⚠️</div>
           <h2 className="text-xl font-semibold text-gray-800 mb-2">Connection Error</h2>
           <p className="text-gray-600 mb-4">{error}</p>
           <button 
             onClick={fetchAvailableTeams}
-            className="btn-primary"
+            className="btn-world-cup"
           >
             Retry
           </button>
@@ -58,33 +58,35 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-soccer-field">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white/95 backdrop-blur-sm border-b-4 border-world-cup-gold shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
               <div className="text-3xl mr-3">🏆</div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  World Cup Predictor
+                <h1 className="text-2xl font-bold text-gray-900 world-cup-font">
+                  FIFA World Cup 2026
                 </h1>
-                <p className="text-sm text-gray-500">
-                  AI-Powered Tournament Simulation
+                <p className="text-sm text-gray-600">
+                  AI Tournament Predictor & Simulator
                 </p>
               </div>
             </div>
-            <div className="text-sm text-gray-500">
-              {availableTeams.length} teams available
+            <div className="text-right">
+              <div className="text-sm text-gray-600 font-medium">
+                {availableTeams.length} teams ready
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Navigation Tabs */}
-      <nav className="bg-white border-b border-gray-200">
+      <nav className="bg-white/90 backdrop-blur-sm border-b-2 border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
+          <div className="flex space-x-1">
             {[
               { id: 'predict', name: 'Match Predictor', icon: '⚽' },
               { id: 'tournament', name: 'Tournament Simulator', icon: '🏆' },
@@ -92,14 +94,17 @@ function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                className={`flex items-center space-x-2 py-3 px-6 font-medium text-sm transition-all duration-200 relative ${
                   activeTab === tab.id
-                    ? 'border-primary-500 text-primary-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'bg-world-cup-gold text-white shadow-md'
+                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
                 }`}
               >
-                <span>{tab.icon}</span>
-                <span>{tab.name}</span>
+                <span className="text-lg">{tab.icon}</span>
+                <span className="font-semibold">{tab.name}</span>
+                {activeTab === tab.id && (
+                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-white rounded-t-full"></div>
+                )}
               </button>
             ))}
           </div>
@@ -107,7 +112,7 @@ function App() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {activeTab === 'predict' && (
           <MatchPredictor availableTeams={availableTeams} apiUrl={API_BASE_URL} />
         )}
@@ -117,15 +122,15 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 mt-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="text-center text-gray-500 text-sm">
-            <p>
-              Powered by advanced machine learning models trained on historical football data
-            </p>
-            <p className="mt-1">
-              Built with React, FastAPI, and state-of-the-art AI algorithms
-            </p>
+      <footer className="bg-white/95 backdrop-blur-sm border-t-4 border-world-cup-gold mt-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex justify-between items-center text-sm text-gray-600">
+            <div>
+              Built by <a href="https://moeezs.com" target="_blank" rel="noopener noreferrer" className="text-soccer-green hover:text-green-700 font-medium">moeez</a>
+            </div>
+            <div>
+              Data: <a href="https://www.kaggle.com/datasets/martj42/international-football-results-from-1872-to-2017" target="_blank" rel="noopener noreferrer" className="text-soccer-green hover:text-green-700">International Football Results 1872-2017</a>
+            </div>
           </div>
         </div>
       </footer>
