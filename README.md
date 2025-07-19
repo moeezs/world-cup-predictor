@@ -1,4 +1,5 @@
 # World Cup Predictor
+![alt text](https://github.com/moeezs/world-cup-predictor/blob/main/frontend/public/favicon.png "world cup trophy")
 
 A machine learning-powered World Cup tournament prediction system. Pick 32 teams, simulate the entire tournament, and see who wins.
 
@@ -161,7 +162,7 @@ The FastAPI backend can be configured through environment variables:
 
 ## 🌐 Deployment Options
 
-### Option 1: Vercel + Railway (Recommended)
+Vercel + Railway (Recommended)
 
 #### Frontend (Vercel)
 1. Push your code to GitHub
@@ -195,89 +196,6 @@ python-multipart==0.0.6
 web: uvicorn main:app --host 0.0.0.0 --port $PORT
 ```
 6. Deploy
-
-### Option 2: Heroku
-
-#### Backend (Heroku)
-1. Create a Heroku app
-2. Add the following buildpacks:
-   - `heroku/python`
-3. Create `requirements.txt` and `Procfile` as above
-4. Deploy using Git or GitHub integration
-
-#### Frontend (Netlify/Vercel)
-Same as Option 1, but point `REACT_APP_API_URL` to your Heroku app URL.
-
-### Option 3: Docker (Full Stack)
-
-Create `docker-compose.yml`:
-```yaml
-version: '3.8'
-services:
-  backend:
-    build: ./backend
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./models:/app/models
-  
-  frontend:
-    build: ./frontend
-    ports:
-      - "3000:3000"
-    environment:
-      - REACT_APP_API_URL=http://localhost:8000
-    depends_on:
-      - backend
-```
-
-Create `backend/Dockerfile`:
-```dockerfile
-FROM python:3.9-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
-
-COPY . .
-EXPOSE 8000
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-```
-
-Create `frontend/Dockerfile`:
-```dockerfile
-FROM node:16-alpine
-
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-EXPOSE 3000
-
-CMD ["npm", "start"]
-```
-
-Deploy:
-```bash
-docker-compose up --build
-```
-
-### Option 4: AWS (Production Scale)
-
-#### Backend (AWS Lambda + API Gateway)
-1. Use Serverless Framework or AWS SAM
-2. Package the FastAPI app with Mangum adapter
-3. Deploy to Lambda with API Gateway
-
-#### Frontend (AWS S3 + CloudFront)
-1. Build the React app: `npm run build`
-2. Upload to S3 bucket configured for static website hosting
-3. Create CloudFront distribution for CDN
-
-#### Database (Optional - AWS RDS)
-For storing user data, predictions, etc.
 
 ## 🧪 Testing
 
