@@ -162,7 +162,7 @@ The FastAPI backend can be configured through environment variables:
 
 ## 🌐 Deployment Options
 
-Vercel + Railway (Recommended)
+Vercel + Render (Recommended)
 
 #### Frontend (Vercel)
 1. Push your code to GitHub
@@ -175,8 +175,8 @@ Vercel + Railway (Recommended)
    - `REACT_APP_API_URL`: Your Railway backend URL
 5. Deploy
 
-#### Backend (Railway)
-1. Create a new Railway project
+#### Backend (Render)
+1. Create a new Render project
 2. Connect your GitHub repository
 3. Set the root directory to `/backend`
 4. Add a `requirements.txt` in the backend directory:
@@ -310,7 +310,7 @@ This project uses historical football data and implements state-of-the-art machi
 - **ML**: CatBoost, LightGBM, scikit-learn
 - **Backend**: FastAPI, Python 3.9+
 - **Frontend**: React 18, Tailwind CSS
-- **Deployment**: Vercel, Railway
+- **Deployment**: Vercel, Render
 
 ---
 
